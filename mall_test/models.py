@@ -1,6 +1,8 @@
 from django.db import models
 from uuid import uuid4
 from django.core.validators import MinValueValidator
+from iamport import Iamport
+from django.conf import settings
 
 
 class Payment(models.Model):
@@ -28,3 +30,19 @@ class Payment(models.Model):
     @property
     def merchant_uid(self) -> str:
         return self.uid.hex
+
+    def portone_check(self, commit=True):
+        print(settings.PORTONE_API_KEY)
+        print(settings.PORTONE_API_SECRET)
+        api = Iamport(
+            imp_key=settings.PORTONE_API_KEY,
+            imp_secret=settings.PORTONE_API_SECRET,
+        )
+        meta = api.find(merchant_uid=self.merchant_uid)
+        self.status = meta["status"]
+        self.is_paid_ok = meta["status"] == "paid" and meta["amount"] == self.amount
+
+        # TODO: meta 속성을 JSONField로 저장
+
+        if commit:
+            self.save()

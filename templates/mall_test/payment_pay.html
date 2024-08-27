@@ -12,7 +12,11 @@
   <script>
     (function() {
         const IMP = window.IMP;
-        const code = "iamport";
+        const code = "{{ portone_shop_id }}";
+        console.log("🚀 ~ code:", code)
+        console.log("🚀 ~ code:", code)
+        console.log("🚀 ~ code:", code)
+        console.log("🚀 ~ code:", code)
         IMP.init(code);
 
         const json_string = document.querySelector("#payment-props").textContent;
@@ -23,10 +27,4 @@
         });
     })();
   </script>
-
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-  </form>
 {% endblock %}
