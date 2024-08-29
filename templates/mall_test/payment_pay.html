@@ -23,6 +23,10 @@
         const props = JSON.parse(json_string);
 
         IMP.request_pay(props, function(response){
+            if(response.error_msg){
+              console.log(props);
+              alert(`${response.error_msg} (${response.error_code}) - ${json_string}`);
+            }
             location.href = window.PAYMENT_CHECK_URL;
         });
     })();
