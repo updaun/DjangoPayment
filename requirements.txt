@@ -3,3 +3,4 @@ django-bootstrap5==24.2
 django-debug-toolbar==4.4.6
 django-environ==0.11.2
 iamport-rest-client==0.9.0
+pillow==10.4.0
