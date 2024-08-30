@@ -20,23 +20,18 @@
           </a>
 
           <ul class="nav nav-pills">
-            <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Pricing</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">FAQs</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+            {% if user.is_authenticated %}
+            <li class="nav-item"><a href="{% url 'profile'%}" class="nav-link">프로필</a></li>
             <li class="nav-item">
-                {% if user.is_authenticated %}
                 <form action="/accounts/logout/" method="post" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="nav-link btn">Logout</button>
+                    <button type="submit" class="nav-link btn">로그아웃</button>
                 </form>
-                {% else %}
-                <a href="/accounts/login/" class="nav-link">
-                    Login
-                </a>
-                {% endif %}
             </li>
+            {% else %}
+              <li class="nav-item"><a href="{% url 'signup'%}" class="nav-link">회원가입</a></li>
+              <li class="nav-item"><a href="{% url 'login'%}" class="nav-link">로그인</a></li>
+            {% endif %}
         </ul>
 
         </header>
