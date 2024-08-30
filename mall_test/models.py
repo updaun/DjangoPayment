@@ -32,8 +32,6 @@ class Payment(models.Model):
         return self.uid.hex
 
     def portone_check(self, commit=True):
-        print(settings.PORTONE_API_KEY)
-        print(settings.PORTONE_API_SECRET)
         api = Iamport(
             imp_key=settings.PORTONE_API_KEY,
             imp_secret=settings.PORTONE_API_SECRET,

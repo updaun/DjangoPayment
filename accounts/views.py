@@ -1,7 +1,8 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+from django.contrib.auth.views import LoginView
 from accounts.models import User
-from accounts.forms import SignupForm
+from accounts.forms import SignupForm, LoginForm
 
 
 signup = CreateView.as_view(
@@ -12,8 +13,10 @@ signup = CreateView.as_view(
 )
 
 
-def login(request):
-    pass
+login = LoginView.as_view(
+    form_class=LoginForm,
+    template_name="accounts/login_form.html",
+)
 
 
 def logout(request):
