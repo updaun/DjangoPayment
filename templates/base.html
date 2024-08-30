@@ -25,7 +25,20 @@
             <li class="nav-item"><a href="#" class="nav-link">Pricing</a></li>
             <li class="nav-item"><a href="#" class="nav-link">FAQs</a></li>
             <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-          </ul>
+            <li class="nav-item">
+                {% if user.is_authenticated %}
+                <form action="/accounts/logout/" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link btn">Logout</button>
+                </form>
+                {% else %}
+                <a href="/accounts/login/" class="nav-link">
+                    Login
+                </a>
+                {% endif %}
+            </li>
+        </ul>
+
         </header>
       </div>
 
