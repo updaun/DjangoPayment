@@ -1,4 +1,7 @@
 from django.urls import path
+from mall import views
 
 
-urlpatterns = []
+urlpatterns = [
+    path("", views.product_list, name="product_list"),
+]
