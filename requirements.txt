@@ -6,3 +6,4 @@ iamport-rest-client==0.9.0
 pillow==10.4.0
 requests==2.26.0
 tqdm==4.66.5
+sorl-thumbnail==12.10.0

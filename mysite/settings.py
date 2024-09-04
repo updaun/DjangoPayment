@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # Third-party
     "debug_toolbar",
     "django_bootstrap5",
+    "sorl.thumbnail",
     # Local
     "accounts",
     "mall",
