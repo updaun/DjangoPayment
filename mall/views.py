@@ -38,6 +38,7 @@ def cart_detail(request):
         model=CartProduct,
         form=CartProductForm,
         can_delete=True,
+        extra=0,
     )
     if request.method == "POST":
         formset = CartProductFormset(
