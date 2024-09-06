@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from mall.models import Product, CartProduct
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,22 @@ class ProductListView(ListView):
 
 
 product_list = ProductListView.as_view()
+
+
+@login_required
+def cart_detail(request):
+    cart_product_qs = (
+        CartProduct.objects.filter(user=request.user)
+        .select_related("product")
+        .order_by("product__name")
+    )
+    return render(
+        request,
+        "mall/cart_detail.html",
+        {
+            "cart_product_list": cart_product_qs,
+        },
+    )
 
 
 @login_required
