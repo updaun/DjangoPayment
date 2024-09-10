@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mall.models import Category, Product
+from mall.models import Category, Product, OrderedProduct
 
 
 @admin.register(Category)
@@ -32,3 +32,8 @@ class ProductAdmin(admin.ModelAdmin):
             request,
             f"{count}개의 상품을 {Product.Status.ACTIVE.label} 상태로 변경했습니다.",
         )
+
+
+@admin.register(OrderedProduct)
+class OrderedProductAdmin(admin.ModelAdmin):
+    pass

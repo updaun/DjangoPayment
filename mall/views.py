@@ -1,6 +1,6 @@
 from django.forms import modelformset_factory
 from django.shortcuts import render
-from mall.models import Product, CartProduct
+from mall.models import Product, CartProduct, Order
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
@@ -86,3 +86,18 @@ def add_to_cart(request, product_pk):
 
     # return redirect(redirect_url)
     return HttpResponse("ok")
+
+
+@login_required
+def order_new(request):
+    cart_product_qs = CartProduct.objects.filter(user=request.user)
+    order = Order.create_from_cart(request.user, cart_product_qs)
+    cart_product_qs.delete()
+    return redirect("order_pay", order.pk)
+
+
+@login_required
+def order_pay(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    messages.warning(request, "구현 예정")
+    return render(request, "mall/order_pay.html", {"order": order})
