@@ -2,8 +2,17 @@ from typing import List
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint, QuerySet
+from django.conf import settings
 from uuid import uuid4
+
+from django.http import Http404
 from accounts.models import User
+from iamport import Iamport
+from django.utils.functional import cached_property
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class Category(models.Model):
@@ -148,3 +157,54 @@ class OrderedProduct(models.Model):
     quantity = models.PositiveIntegerField("수량")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class AbstractPortonePayment(models.Model):
+    class PayMethod(models.TextChoices):
+        CARD = "card", "신용카드"
+
+    class PayStatus(models.TextChoices):
+        READY = "ready", "결제 준비"
+        PAID = "paid", "결제 완료"
+        CANCELED = "canceled", "결제 취소"
+        FAILED = "failed", "결제 실패"
+
+    meta = models.JSONField("포트원 결제내역", default=dict, editable=False)
+    uid = models.UUIDField("쇼핑몰 결제식별자", default=uuid4, editable=False, unique=True)
+    desired_amount = models.PositiveIntegerField("결제금액", editable=False)
+    buyer_name = models.CharField("구매자 이름", max_length=100, editable=False)
+    buyer_email = models.EmailField("구매자 이메일", editable=False)
+    pay_method = models.CharField(
+        "결제수단", max_length=20, choices=PayMethod.choices, default=PayMethod.CARD
+    )
+    pay_status = models.CharField(
+        "결제상태", max_length=20, choices=PayStatus.choices, default=PayStatus.READY
+    )
+    is_paid_ok = models.BooleanField(
+        "결제성공 여부", default=False, db_index=True, editable=False
+    )
+
+    @cached_property
+    def api(self):
+        return Iamport(
+            imp_key=settings.PORTONE_API_KEY, imp_secret=settings.PORTONE_API_SECRET
+        )
+
+    def update(self):
+        try:
+            self.meta = self.api.find(merchant_uid=self.uid)
+        except (Iamport.ResponseError, Iamport.HttpError) as e:
+            logger.error(str(e), exc_info=e)
+            raise Http404("포트원에서 결제내역을 찾을 수 없습니다.")
+
+        self.pay_status = self.meta["status"]
+        self.is_paid_ok = self.api.is_paid(self.desired_amount, response=self.meta)
+
+        self.save()
+
+    class Meta:
+        abstract = True
+
+
+class OrderPayment(AbstractPortonePayment):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, db_constraint=False)
