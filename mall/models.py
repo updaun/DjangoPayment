@@ -123,6 +123,9 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def can_pay(self) -> bool:
+        return self.status in (self.Status.REQUESTED, self.Status.FAILED_PAYMENT)
+
     @classmethod
     def create_from_cart(
         cls, user: User, cart_product_qs: QuerySet[CartProduct]
@@ -148,6 +151,16 @@ class Order(models.Model):
         OrderedProduct.objects.bulk_create(ordered_product_list)
         return order
 
+    @property
+    def name(self):
+        first_product = self.product_set.first()
+        if first_product is None:
+            return "등록된 상품이 없습니다."
+        size = self.product_set.all().count()
+        if size < 2:
+            return first_product.name
+        return f"{first_product.name} 외 {size - 1}건"
+
 
 class OrderedProduct(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, db_constraint=False)
@@ -171,6 +184,7 @@ class AbstractPortonePayment(models.Model):
 
     meta = models.JSONField("포트원 결제내역", default=dict, editable=False)
     uid = models.UUIDField("쇼핑몰 결제식별자", default=uuid4, editable=False, unique=True)
+    name = models.CharField("결제명", max_length=200)
     desired_amount = models.PositiveIntegerField("결제금액", editable=False)
     buyer_name = models.CharField("구매자 이름", max_length=100, editable=False)
     buyer_email = models.EmailField("구매자 이메일", editable=False)
@@ -208,3 +222,14 @@ class AbstractPortonePayment(models.Model):
 
 class OrderPayment(AbstractPortonePayment):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, db_constraint=False)
+
+    @classmethod
+    def create_by_order(cls, order: Order) -> "OrderPayment":
+        user = order.user
+        return cls.objects.create(
+            order=order,
+            name=order.name,
+            desired_amount=order.total_amount,
+            buyer_name=user.get_full_name(),
+            buyer_email=user.email,
+        )

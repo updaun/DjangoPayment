@@ -1,6 +1,6 @@
 from django.forms import modelformset_factory
 from django.shortcuts import render
-from mall.models import Product, CartProduct, Order
+from mall.models import Product, CartProduct, Order, OrderPayment
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
@@ -100,4 +100,11 @@ def order_new(request):
 def order_pay(request, pk):
     order = get_object_or_404(Order, pk=pk)
     messages.warning(request, "구현 예정")
-    return render(request, "mall/order_pay.html", {"order": order})
+
+    if not order.can_pay():
+        messages.error(request, "결제할 수 없는 주문입니다.")
+        return redirect("order_detail", order.pk)
+
+    payment = OrderPayment.create_by_order(order)
+
+    return render(request, "mall/order_pay.html", {"payment": payment})
