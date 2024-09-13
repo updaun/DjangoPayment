@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.forms import modelformset_factory
 from django.shortcuts import render
+from django.urls import reverse
 from mall.models import Product, CartProduct, Order, OrderPayment
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
@@ -98,8 +100,7 @@ def order_new(request):
 
 @login_required
 def order_pay(request, pk):
-    order = get_object_or_404(Order, pk=pk)
-    messages.warning(request, "구현 예정")
+    order = get_object_or_404(Order, pk=pk, user=request.user)
 
     if not order.can_pay():
         messages.error(request, "결제할 수 없는 주문입니다.")
@@ -107,4 +108,27 @@ def order_pay(request, pk):
 
     payment = OrderPayment.create_by_order(order)
 
-    return render(request, "mall/order_pay.html", {"payment": payment})
+    payment_props = {
+        "merchant_uid": payment.merchant_uid,
+        "name": payment.name,
+        "amount": payment.desired_amount,
+        "buyer_name": payment.buyer_name,
+        "buyer_email": payment.buyer_email,
+    }
+
+    return render(
+        request,
+        "mall/order_pay.html",
+        {
+            "portone_shop_id": settings.PORTONE_SHOP_ID,
+            "payment_props": payment_props,
+            "next_url": reverse("order_check", args=[order.pk, payment.pk]),
+        },
+    )
+
+
+@login_required
+def order_check(request, order_pk, payment_pk):
+    payment = get_object_or_404(OrderPayment, pk=payment_pk, order__pk=order_pk)
+    payment.update()
+    return redirect("order_detail", order_pk)
