@@ -104,7 +104,8 @@ def order_pay(request, pk):
 
     if not order.can_pay():
         messages.error(request, "결제할 수 없는 주문입니다.")
-        return redirect("order_detail", order.pk)
+        return redirect(order)  # get_absolute_url()을 호출합니다.
+        # return redirect("order_detail", order.pk)
 
     payment = OrderPayment.create_by_order(order)
 
@@ -131,4 +132,17 @@ def order_pay(request, pk):
 def order_check(request, order_pk, payment_pk):
     payment = get_object_or_404(OrderPayment, pk=payment_pk, order__pk=order_pk)
     payment.update()
-    return redirect("order_detail", order_pk)
+    return redirect(payment.order)  # get_absolute_url()을 호출합니다.
+    # return redirect("order_detail", order_pk)
+
+
+@login_required
+def order_detail(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user)
+    return render(
+        request,
+        "mall/order_detail.html",
+        {
+            "order": order,
+        },
+    )
