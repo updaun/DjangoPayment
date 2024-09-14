@@ -124,6 +124,16 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def name(self):
+        first_product = self.product_set.first()
+        if first_product is None:
+            return "등록된 상품이 없습니다."
+        size = self.product_set.all().count()
+        if size < 2:
+            return first_product.name
+        return f"{first_product.name} 외 {size - 1}건"
+
     def get_absolute_url(self):
         return reverse("order_detail", args=[self.pk])
 
@@ -155,15 +165,8 @@ class Order(models.Model):
         OrderedProduct.objects.bulk_create(ordered_product_list)
         return order
 
-    @property
-    def name(self):
-        first_product = self.product_set.first()
-        if first_product is None:
-            return "등록된 상품이 없습니다."
-        size = self.product_set.all().count()
-        if size < 2:
-            return first_product.name
-        return f"{first_product.name} 외 {size - 1}건"
+    class Meta:
+        ordering = ["-pk"]
 
 
 class OrderedProduct(models.Model):

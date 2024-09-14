@@ -1,0 +1,27 @@
+{% extends "mall/base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+    <table class="table table-hover table-ordered">
+
+        <thead>
+            <tr>
+                <th>주문명</th>
+                <th>결제금액</th>
+                <th>상태</th>
+                <th>주문일시</th>
+            </tr>
+        <tbody>
+            {% for order in order_list %}
+            <tr>
+                <td><a href="{{ order.get_absolute_url }}">{{ order.name }}</a></td>
+                <td>{{ order.total_amount|intcomma }}</td>
+                <td>{{ order.get_status_display }}</td>
+                <td>{{ order.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
