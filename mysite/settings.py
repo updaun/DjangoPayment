@@ -165,5 +165,9 @@ PORTONE_SHOP_ID = env.str("PORTONE_SHOP_ID", default="")
 PORTONE_API_KEY = env.str("PORTONE_API_KEY", default="")
 PORTONE_API_SECRET = env.str("PORTONE_API_SECRET", default="")
 
+PORTONE_WEBHOOK_IPS = env.list(
+    "PORTONE_WEBHOOK_IPS", default=["52.78.100.19", "52.78.48.223", "52.78.5.241"]
+)
+
 # csrf
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
