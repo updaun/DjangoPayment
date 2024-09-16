@@ -1,3 +1,4 @@
+import json
 from django.conf import settings
 from django.forms import modelformset_factory
 from django.shortcuts import render
@@ -5,6 +6,7 @@ from django.urls import reverse
 from mall.models import Product, CartProduct, Order, OrderPayment
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from mall.forms import CartProductForm
@@ -161,3 +163,23 @@ def order_detail(request, pk):
             "order": order,
         },
     )
+
+
+@require_POST
+@csrf_exempt
+def portone_webhook(request):
+    if request.META["CONTENT_TYPE"] == "application/json":
+        payload = json.loads(request.body)
+        merchant_uid = payload.get("merchant_uid")
+    else:
+        merchant_uid = request.POST.get("merchant_uid")
+
+    if not merchant_uid:
+        return HttpResponse("merchant_uid 인자가 누락되었습니다.", status=400)
+    elif merchant_uid == "merchant_123456789":
+        return HttpResponse("test ok")
+
+    payment = get_object_or_404(OrderPayment, merchant_uid=merchant_uid)
+    payment.update()
+
+    return HttpResponse("ok")
